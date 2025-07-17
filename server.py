@@ -6,6 +6,11 @@ from flask import Flask, request, abort
 # Initialize the Flask web application
 app = Flask(__name__)
 
+@app.route('/', methods=['GET'])
+def health_check():
+    """A simple health check endpoint for Coolify."""
+    return "Markitdown server is running.", 200
+
 @app.route('/convert', methods=['POST'])
 def convert_file():
     """
