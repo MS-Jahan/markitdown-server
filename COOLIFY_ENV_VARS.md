@@ -5,6 +5,9 @@ Copy and paste these into your **Coolify Environment Variables** section:
 ## 📋 **Required Variables** (with defaults)
 
 ```bash
+# Server Configuration
+PORT=8080
+
 # Application Configuration
 MAX_FILE_SIZE_MB=50
 LOG_LEVEL=INFO
@@ -36,6 +39,12 @@ LLM_API_KEY=sk-your-openai-api-key-here
 ---
 
 ## 📊 **Variable Reference**
+
+### **Server Configuration**
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `PORT` | `8080` | External port to expose the server on |
 
 ### **Application Settings**
 

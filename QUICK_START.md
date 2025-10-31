@@ -3,6 +3,7 @@
 ## Core Variables (Copy All)
 
 ```
+PORT=8080
 MAX_FILE_SIZE_MB=50
 LOG_LEVEL=INFO
 ENABLE_MARKITDOWN_PLUGINS=false
