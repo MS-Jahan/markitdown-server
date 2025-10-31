@@ -1,0 +1,97 @@
+services:
+  markitdown-server:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: markitdown-server
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    environment:
+      # ===== Application Configuration =====
+      # Maximum file upload size in MB (default: 50)
+      - MAX_FILE_SIZE_MB=${MAX_FILE_SIZE_MB:-50}
+
+      # Request timeout in seconds (default: 120)
+      # Note: This is informational; actual timeout is controlled by Gunicorn
+      - REQUEST_TIMEOUT_SECONDS=${REQUEST_TIMEOUT_SECONDS:-120}
+
+      # Enable MarkItDown plugins (default: false)
+      # Set to 'true' to enable third-party plugins
+      - ENABLE_MARKITDOWN_PLUGINS=${ENABLE_MARKITDOWN_PLUGINS:-false}
+
+      # ===== Logging Configuration =====
+      # Log level: DEBUG, INFO, WARNING, ERROR, CRITICAL (default: INFO)
+      - LOG_LEVEL=${LOG_LEVEL:-INFO}
+
+      # ===== Gunicorn Configuration =====
+      # Number of worker processes (default: CPU cores * 2 + 1)
+      - GUNICORN_WORKERS=${GUNICORN_WORKERS:-4}
+
+      # Worker timeout in seconds (default: 120)
+      - GUNICORN_TIMEOUT=${GUNICORN_TIMEOUT:-120}
+
+      # Graceful timeout for worker shutdown in seconds (default: 30)
+      - GUNICORN_GRACEFUL_TIMEOUT=${GUNICORN_GRACEFUL_TIMEOUT:-30}
+
+      # Maximum requests per worker before restart (default: 1000)
+      # Helps prevent memory leaks
+      - GUNICORN_MAX_REQUESTS=${GUNICORN_MAX_REQUESTS:-1000}
+
+      # Jitter for max requests to prevent all workers restarting at once (default: 50)
+      - GUNICORN_MAX_REQUESTS_JITTER=${GUNICORN_MAX_REQUESTS_JITTER:-50}
+
+      # ===== Optional: LLM Integration =====
+      # For AI-powered image descriptions in PDFs/PPTX
+      # LLM model to use (e.g., gpt-4o, gpt-4-vision-preview)
+      - LLM_MODEL=${LLM_MODEL:-}
+
+      # OpenAI API key (required if LLM_MODEL is set)
+      - LLM_API_KEY=${LLM_API_KEY:-}
+
+    deploy:
+      resources:
+        limits:
+          # Memory limit to prevent OOM on host
+          # Adjust based on your workload and file sizes
+          memory: ${DOCKER_MEMORY_LIMIT:-2G}
+          cpus: ${DOCKER_CPU_LIMIT:-2.0}
+        reservations:
+          memory: ${DOCKER_MEMORY_RESERVATION:-512M}
+          cpus: ${DOCKER_CPU_RESERVATION:-0.5}
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import requests; requests.get('http://localhost:8080/health', timeout=5)",
+        ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    volumes:
+      # Optional: Mount for logs (if you want persistent logs)
+      # - ./logs:/app/logs
+      # Recommended: Mount /tmp as tmpfs for better performance
+      - type: tmpfs
+        target: /tmp
+        tmpfs:
+          size: 1G
+    # Security options
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    cap_add:
+      - CHOWN
+      - SETUID
+      - SETGID
+    read_only: false # Set to true if you don't need write access
+    networks:
+      - markitdown-network
+
+networks:
+  markitdown-network:
+    driver: bridge

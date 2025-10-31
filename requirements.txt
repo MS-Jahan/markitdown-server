@@ -1,0 +1,6 @@
+Flask==3.1.0
+markitdown[all]
+gunicorn==23.0.0
+requests
+# Optional: For LLM-powered image descriptions
+openai>=1.0.0
